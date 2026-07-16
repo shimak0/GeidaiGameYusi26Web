@@ -283,8 +283,31 @@
       aspect-ratio: 1;
       border-radius: 999px;
       background: var(--muted);
-      color: transparent;
+      color: var(--purple);
       overflow: hidden;
+      transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+    }
+
+    .sns-link:hover,
+    .sns-link:focus-visible {
+      background: var(--purple);
+      color: var(--white);
+      transform: translateY(-3px);
+    }
+
+    .sns-icon {
+      width: 48%;
+      height: 48%;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .sns-icon-fill {
+      fill: currentColor;
+      stroke: none;
     }
 
     .sns-label {

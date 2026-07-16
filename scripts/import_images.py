@@ -7,21 +7,69 @@ import argparse
 import re
 import shutil
 import subprocess
+import sys
 from pathlib import Path
+
+from work_links import parse_links
 
 
 ROOT = Path(__file__).resolve().parent.parent
-WORK_ID = re.compile(r"work-(0[1-9]|1[0-9]|2[01])$")
+WORK_FOLDER_NAMES = {
+    "work-01": "work-01-cest-bones",
+    "work-02": "work-02-make-this-shape",
+    "work-03": "work-03-boundary",
+    "work-04": "work-04-player",
+    "work-05": "work-05-transparent",
+    "work-06": "work-06-shiftwelt",
+    "work-07": "work-07-shred-shrine",
+    "work-08": "work-08-tutti",
+    "work-09": "work-09-lighthouse-climbing",
+    "work-10": "work-10-kiss-find",
+    "work-11": "work-11-restoration-library",
+    "work-12": "work-12-animemories-the-library-of-memories",
+    "work-13": "work-13-play-room",
+    "work-14": "work-14-newme",
+    "work-15": "work-15-kurukuru-guruguru",
+    "work-16": "work-16-another-world",
+    "work-17": "work-17-where-the-voice-goes",
+    "work-18": "work-18-astrrow",
+    "work-19": "work-19-colors",
+    "work-20": "work-20-arcabbit",
+    "work-21": "work-21-exam-pachinko",
+}
+FOLDER_TO_WORK_ID = {folder_name: work_id for work_id, folder_name in WORK_FOLDER_NAMES.items()}
 REQUIRED_BASENAMES = {"main"}
 OPTIONAL_BASENAMES = {"thumbnail"} | {f"gallery-{number:02d}" for number in range(1, 6)}
 ALLOWED_BASENAMES = REQUIRED_BASENAMES | OPTIONAL_BASENAMES
 ALLOWED_EXTENSIONS = {".jpg", ".png"}
+LINKS_FILENAME = "links.txt"
 MAX_BYTES = 10 * 1024 * 1024
 
 
-def image_directories(incoming: Path) -> list[Path]:
-    directories = [path for path in incoming.rglob("work-??") if path.is_dir() and WORK_ID.fullmatch(path.name)]
-    duplicate_ids = {path.name for path in directories if sum(item.name == path.name for item in directories) > 1}
+def work_id_from_folder_name(folder_name: str) -> str | None:
+    if folder_name in WORK_FOLDER_NAMES:
+        return folder_name
+    return FOLDER_TO_WORK_ID.get(folder_name)
+
+
+def image_directories(incoming: Path) -> list[tuple[str, Path]]:
+    candidates = [path for path in incoming.rglob("work-*") if path.is_dir()]
+    invalid_names = sorted(
+        path.name for path in candidates if work_id_from_folder_name(path.name) is None
+    )
+    if invalid_names:
+        raise SystemExit(f"認識できない作品フォルダ名があります: {', '.join(invalid_names)}")
+
+    directories = [
+        (work_id_from_folder_name(path.name), path)
+        for path in candidates
+        if work_id_from_folder_name(path.name) is not None
+    ]
+    duplicate_ids = {
+        work_id
+        for work_id, _ in directories
+        if sum(item_id == work_id for item_id, _ in directories) > 1
+    }
     if duplicate_ids:
         raise SystemExit(f"同じ作品IDのフォルダが複数あります: {', '.join(sorted(duplicate_ids))}")
     return sorted(directories)
@@ -29,12 +77,13 @@ def image_directories(incoming: Path) -> list[Path]:
 
 def validate(directory: Path) -> list[Path]:
     files = [path for path in directory.iterdir() if path.is_file() and path.name != ".DS_Store"]
+    image_files = [path for path in files if path.name != LINKS_FILENAME]
     unexpected = {
         path.name
-        for path in files
+        for path in image_files
         if path.stem not in ALLOWED_BASENAMES or path.suffix not in ALLOWED_EXTENSIONS
     }
-    basenames = {path.stem for path in files if path.name not in unexpected}
+    basenames = {path.stem for path in image_files if path.name not in unexpected}
     missing = REQUIRED_BASENAMES - basenames
     if missing:
         required_names = ", ".join(
@@ -47,7 +96,7 @@ def validate(directory: Path) -> list[Path]:
     duplicates = {
         basename
         for basename in basenames
-        if sum(path.stem == basename for path in files) > 1
+        if sum(path.stem == basename for path in image_files) > 1
     }
     if duplicates:
         raise ValueError(
@@ -62,7 +111,7 @@ def validate(directory: Path) -> list[Path]:
     if gallery_numbers and gallery_numbers != list(range(1, gallery_numbers[-1] + 1)):
         raise ValueError("gallery画像の番号が連続していません。gallery-01 から順に指定してください")
 
-    for path in files:
+    for path in image_files:
         if path.stat().st_size > MAX_BYTES:
             raise ValueError(f"10MBを超えています: {path.name}")
         result = subprocess.run(
@@ -74,6 +123,9 @@ def validate(directory: Path) -> list[Path]:
         expected_mime = "image/jpeg" if path.suffix == ".jpg" else "image/png"
         if result.stdout.strip() != expected_mime:
             raise ValueError(f"拡張子と画像形式が一致しません: {path.name}")
+    links_path = directory / LINKS_FILENAME
+    if links_path.exists():
+        parse_links(links_path)
     return sorted(files)
 
 
@@ -90,22 +142,25 @@ def main() -> None:
     if not directories:
         raise SystemExit("work-01 〜 work-21 の作品フォルダが見つかりません。")
 
-    validated: list[tuple[Path, list[Path]]] = []
+    validated: list[tuple[str, Path, list[Path]]] = []
     errors = []
-    for directory in directories:
+    for work_id, directory in directories:
         try:
-            validated.append((directory, validate(directory)))
+            validated.append((work_id, directory, validate(directory)))
         except (OSError, ValueError, subprocess.SubprocessError) as error:
             errors.append(f"{directory.name}: {error}")
     if errors:
         raise SystemExit("画像を取り込めませんでした:\n" + "\n".join(errors))
 
-    for directory, files in validated:
+    for work_id, directory, files in validated:
         if args.check:
-            print(f"OK {directory.name}: {len(files)} files")
+            print(f"OK {directory.name} -> {work_id}: {len(files)} files")
             continue
-        destination = ROOT / "Image" / "works" / directory.name
+        destination = ROOT / "Image" / "works" / work_id
         destination.mkdir(parents=True, exist_ok=True)
+        existing_links = destination / LINKS_FILENAME
+        if existing_links.exists():
+            existing_links.unlink()
         for old_file in destination.iterdir():
             if (
                 old_file.is_file()
@@ -115,7 +170,16 @@ def main() -> None:
                 old_file.unlink()
         for source in files:
             shutil.copy2(source, destination / source.name)
-        print(f"IMPORTED {directory.name}: {len(files)} files")
+        print(f"IMPORTED {directory.name} -> {work_id}: {len(files)} files")
+
+    if args.check:
+        return
+
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "build_works.py")],
+        check=True,
+    )
+    print("作品ページを再生成しました")
 
 
 if __name__ == "__main__":

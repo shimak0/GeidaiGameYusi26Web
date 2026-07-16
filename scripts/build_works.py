@@ -10,6 +10,8 @@ import re
 import unicodedata
 from pathlib import Path
 
+from work_links import parse_links, youtube_embed_url
+
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CSV = ROOT / "docs" / "有志展キャプション情報 - シート1.csv"
@@ -43,6 +45,28 @@ PUBLIC_AUTHOR_OVERRIDES = {
     "灯台登り": "陳禹霖（チンウリン）",
     "Play Room": "鈴木 ひなの・中山 大成・松浦 恵夢・村山 海",
 }
+SOCIAL_LINKS = (
+    (
+        "x",
+        "X",
+        '<svg class="sns-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4l14 16M19 4L5 20"/></svg>',
+    ),
+    (
+        "instagram",
+        "Instagram",
+        '<svg class="sns-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle class="sns-icon-fill" cx="17.5" cy="6.7" r="1"/></svg>',
+    ),
+    (
+        "steam",
+        "Steam",
+        '<svg class="sns-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="15.8" cy="8.2" r="3.2"/><circle cx="7.2" cy="16.2" r="2.5"/><path d="M9.3 14.8l4-3.9M4 14.8l1.2.5"/></svg>',
+    ),
+    (
+        "website",
+        "Website",
+        '<svg class="sns-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3.5 12h17M12 3c2.4 2.5 3.6 5.5 3.6 9S14.4 18.5 12 21M12 3C9.6 5.5 8.4 8.5 8.4 12S9.6 18.5 12 21"/></svg>',
+    ),
+)
 
 
 def normalized(value: str | None) -> str:
@@ -115,6 +139,35 @@ def public_description(value: str) -> str:
     return re.split(r"\s*[（(]?←", value, maxsplit=1)[0].rstrip()
 
 
+def media_links_html(work_id: str, title: str) -> tuple[str, str]:
+    links = parse_links(ROOT / "Image" / "works" / work_id / "links.txt")
+    youtube_url = links.get("youtube", "")
+    if youtube_url:
+        embed_url = html.escape(youtube_embed_url(youtube_url), quote=True)
+        video_markup = f'''    <section class="video-box" aria-label="作品映像">
+      <iframe src="{embed_url}" title="{title} 作品映像" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    </section>'''
+    else:
+        video_markup = ""
+
+    items = []
+    for key, label, icon in SOCIAL_LINKS:
+        url = links.get(key, "")
+        if not url:
+            continue
+        escaped_url = html.escape(url, quote=True)
+        items.append(
+            f'''      <li><a class="sns-link sns-link-{key}" href="{escaped_url}" target="_blank" rel="noopener noreferrer" aria-label="{label}を開く">{icon}<span class="sns-label">{label}</span></a></li>'''
+        )
+    if items:
+        social_markup = '''    <ul class="sns-links" aria-label="SNS・関連リンク">
+{items}
+    </ul>'''.format(items="\n".join(items))
+    else:
+        social_markup = ""
+    return video_markup, social_markup
+
+
 def card_html(work: dict[str, str]) -> str:
     title = html.escape(work["作品タイトル（日本語）"])
     author = escape_lines(work["名前（日本語表記）"])
@@ -138,6 +191,7 @@ def detail_html(work: dict[str, str]) -> str:
     description_raw = public_description(work["コンセプト・遊び方など"])
     description = escape_lines(description_raw)
     work_id = work["id"]
+    video_markup, social_markup = media_links_html(work_id, title_ja)
     title_en_markup = (
         f'\n        <span class="work-title-en" lang="en">{title_en}</span>'
         if title_en_raw and title_en_raw.casefold() != work["作品タイトル（日本語）"].casefold()
@@ -206,15 +260,9 @@ def detail_html(work: dict[str, str]) -> str:
       </div>
     </section>
 
-    <section class="video-box" aria-label="作品映像">
-      映像<br>（YoutubeURL 等，無くても可）
-    </section>
+{video_markup}
 
-    <ul class="sns-links" aria-label="SNSリンク">
-      <li><span class="sns-link" aria-disabled="true"><span class="sns-label">SNS 1</span></span></li>
-      <li><span class="sns-link" aria-disabled="true"><span class="sns-label">SNS 2</span></span></li>
-      <li><span class="sns-link" aria-disabled="true"><span class="sns-label">SNS 3</span></span></li>
-    </ul>
+{social_markup}
 
     <div class="back-wrap">
       <a class="back-button" href="../index.html#works">BACK</a>
