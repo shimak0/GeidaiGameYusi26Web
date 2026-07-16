@@ -208,7 +208,6 @@ def detail_html(work: dict[str, str]) -> str:
     title_en = html.escape(title_en_raw)
     author_ja = escape_lines(work["名前（日本語表記）"])
     author_en = html.escape(work["Name（英語表記）"])
-    duration = html.escape(work["体験時間"])
     description_raw = public_description(work["コンセプト・遊び方など"])
     description = escape_lines(description_raw)
     work_id = work["id"]
@@ -288,7 +287,6 @@ def detail_html(work: dict[str, str]) -> str:
     <section class="work-info" aria-labelledby="work-title">
       <h1 class="work-title" id="work-title">{title_ja}{title_en_markup}</h1>
       <p class="work-author">{author_ja}{author_en_markup}</p>
-      <p class="work-duration">体験時間：{duration}</p>
       <p class="work-description">{description}</p>
     </section>
 

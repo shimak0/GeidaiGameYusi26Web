@@ -482,13 +482,6 @@
       font-family: var(--latin-font);
     }
 
-    .work-duration {
-      margin: 0 0 clamp(42px, 4vw, 60px);
-      color: var(--purple);
-      font-weight: 500;
-      font-size: clamp(15px, 1.3vw, 20px);
-    }
-
     .carousel-side {
       padding: 0;
       color: var(--ink);
