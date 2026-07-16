@@ -34,25 +34,34 @@
       <p class="work-description">「アルカビット」は、2つのマウスを両手で同時に操作する、独特な操作方法の2Dアクションゲームです。2本のグラップリングフックを巧みに操りましょう。</p>
     </section>
 
-    <section class="gallery" aria-label="作品画像" data-optional-gallery>
-      <ul class="gallery-track">
-        <li class="gallery-item">
-          <img src="../Image/works/work-20/gallery-01.jpg" data-fallback-src="../Image/works/work-20/gallery-01.png" alt="アルカビット 作品画像 1" loading="lazy" data-optional-image>
-        </li>
-        <li class="gallery-item">
-          <img src="../Image/works/work-20/gallery-02.jpg" data-fallback-src="../Image/works/work-20/gallery-02.png" alt="アルカビット 作品画像 2" loading="lazy" data-optional-image>
-        </li>
-        <li class="gallery-item">
-          <img src="../Image/works/work-20/gallery-03.jpg" data-fallback-src="../Image/works/work-20/gallery-03.png" alt="アルカビット 作品画像 3" loading="lazy" data-optional-image>
-        </li>
-        <li class="gallery-item">
-          <img src="../Image/works/work-20/gallery-04.jpg" data-fallback-src="../Image/works/work-20/gallery-04.png" alt="アルカビット 作品画像 4" loading="lazy" data-optional-image>
-        </li>
-        <li class="gallery-item">
-          <img src="../Image/works/work-20/gallery-05.jpg" data-fallback-src="../Image/works/work-20/gallery-05.png" alt="アルカビット 作品画像 5" loading="lazy" data-optional-image>
-        </li>
-      </ul>
+    <section class="carousel" aria-label="作品画像スライダー" data-carousel>
+      <div class="carousel-track">
+        <button class="carousel-side prev" type="button" aria-label="前の作品画像" data-carousel-prev></button>
+        <div class="carousel-frame">
+          <span class="carousel-placeholder">作品画像<br>（3 から 5 枚程度，無くても可）</span>
+          <div class="carousel-images">
+            <img class="carousel-image" src="../Image/works/work-20/gallery-01.png" alt="アルカビット 作品画像 1">
+            <img class="carousel-image" src="../Image/works/work-20/gallery-02.png" alt="アルカビット 作品画像 2" hidden>
+            <img class="carousel-image" src="../Image/works/work-20/gallery-03.png" alt="アルカビット 作品画像 3" hidden>
+          </div>
+        </div>
+        <button class="carousel-side next" type="button" aria-label="次の作品画像" data-carousel-next></button>
+      </div>
+      <div class="carousel-dots">
+        <button class="carousel-dot" type="button" aria-label="作品画像 1 を表示" data-carousel-dot="0"></button>
+        <button class="carousel-dot" type="button" aria-label="作品画像 2 を表示" data-carousel-dot="1"></button>
+        <button class="carousel-dot" type="button" aria-label="作品画像 3 を表示" data-carousel-dot="2"></button>
+      </div>
     </section>
+
+    <section class="video-box" aria-label="作品映像">
+      <iframe data-youtube-embed="https://www.youtube.com/embed/06cbq8VoJ94" title="アルカビット 作品映像" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="origin" allowfullscreen></iframe>
+      <a class="youtube-fallback" href="https://youtu.be/06cbq8VoJ94" target="_blank" rel="noopener noreferrer" hidden>YouTubeで動画を見る</a>
+    </section>
+
+    <ul class="sns-links" aria-label="SNS・関連リンク">
+      <li><a class="sns-link sns-link-steam" href="https://store.steampowered.com/app/3910660" target="_blank" rel="noopener noreferrer" aria-label="Steamを開く"><svg class="sns-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="15.8" cy="8.2" r="3.2"/><circle cx="7.2" cy="16.2" r="2.5"/><path d="M9.3 14.8l4-3.9M4 14.8l1.2.5"/></svg><span class="sns-label">Steam</span></a></li>
+    </ul>
 
     <div class="back-wrap">
       <a class="back-button" href="../index.html#works">BACK</a>
