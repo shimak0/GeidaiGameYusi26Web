@@ -139,13 +139,23 @@ def public_description(value: str) -> str:
     return re.split(r"\s*[（(]?←", value, maxsplit=1)[0].rstrip()
 
 
+def existing_work_image_url(work_id: str, basename: str) -> str | None:
+    directory = ROOT / "Image" / "works" / work_id
+    for extension in (".jpg", ".png"):
+        if (directory / f"{basename}{extension}").exists():
+            return f"../Image/works/{work_id}/{basename}{extension}"
+    return None
+
+
 def media_links_html(work_id: str, title: str) -> tuple[str, str]:
     links = parse_links(ROOT / "Image" / "works" / work_id / "links.txt")
     youtube_url = links.get("youtube", "")
     if youtube_url:
         embed_url = html.escape(youtube_embed_url(youtube_url), quote=True)
+        escaped_youtube_url = html.escape(youtube_url, quote=True)
         video_markup = f'''    <section class="video-box" aria-label="作品映像">
-      <iframe src="{embed_url}" title="{title} 作品映像" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+      <iframe data-youtube-embed="{embed_url}" title="{title} 作品映像" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="origin" allowfullscreen></iframe>
+      <a class="youtube-fallback" href="{escaped_youtube_url}" target="_blank" rel="noopener noreferrer" hidden>YouTubeで動画を見る</a>
     </section>'''
     else:
         video_markup = ""
@@ -200,13 +210,19 @@ def detail_html(work: dict[str, str]) -> str:
     author_en_markup = (
         f' <span class="work-author-en" lang="en">/ {author_en}</span>' if author_en else ""
     )
-    carousel_images = "\n".join(
-        f'''            <img class="carousel-image" src="../Image/works/{work_id}/gallery-{number:02d}.jpg" data-fallback-src="../Image/works/{work_id}/gallery-{number:02d}.png" alt="{title_ja} 作品画像 {number}" loading="lazy" hidden>'''
+    gallery_urls = [
+        (number, url)
         for number in range(1, 6)
+        if (url := existing_work_image_url(work_id, f"gallery-{number:02d}"))
+    ]
+    carousel_images = "\n".join(
+        f'''            <img class="carousel-image" src="{url}" alt="{title_ja} 作品画像 {number}"{"" if index == 0 else " hidden"}>'''
+        for index, (number, url) in enumerate(gallery_urls)
     )
+    dot_count = len(gallery_urls) if gallery_urls else 3
     carousel_dots = "\n".join(
         f'        <button class="carousel-dot" type="button" aria-label="作品画像 {number} を表示" data-carousel-dot="{number - 1}"></button>'
-        for number in range(1, 6)
+        for number in range(1, dot_count + 1)
     )
 
     return f'''<!doctype html>

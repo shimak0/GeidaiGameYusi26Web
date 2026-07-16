@@ -84,6 +84,7 @@ document.querySelectorAll("[data-carousel]").forEach(async (carousel) => {
     dots.forEach((dot) => {
       dot.hidden = true;
       dot.classList.remove("is-active");
+      dot.removeAttribute("aria-current");
       dot.disabled = true;
     });
 
@@ -104,6 +105,9 @@ document.querySelectorAll("[data-carousel]").forEach(async (carousel) => {
       dot.hidden = false;
       dot.disabled = false;
       dot.classList.toggle("is-active", index === currentIndex);
+      if (index === currentIndex) {
+        dot.setAttribute("aria-current", "true");
+      }
     });
     prevButton.disabled = availableImages.length < 2;
     nextButton.disabled = availableImages.length < 2;
@@ -128,6 +132,22 @@ document.querySelectorAll("[data-carousel]").forEach(async (carousel) => {
   });
 
   render();
+});
+
+document.querySelectorAll("[data-youtube-embed]").forEach((iframe) => {
+  const fallback = iframe.parentElement.querySelector(".youtube-fallback");
+  if (window.location.protocol === "file:") {
+    iframe.remove();
+    fallback.hidden = false;
+    return;
+  }
+
+  const embedUrl = new URL(iframe.dataset.youtubeEmbed);
+  if (window.location.origin && window.location.origin !== "null") {
+    embedUrl.searchParams.set("origin", window.location.origin);
+  }
+  embedUrl.searchParams.set("playsinline", "1");
+  iframe.src = embedUrl.toString();
 });
 
 document.addEventListener("contextmenu", (event) => {

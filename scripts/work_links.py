@@ -38,7 +38,7 @@ def youtube_embed_url(url: str) -> str:
     video_id = youtube_video_id(url)
     if not video_id:
         raise ValueError("YouTube動画URLから動画IDを取得できません")
-    return f"https://www.youtube-nocookie.com/embed/{video_id}"
+    return f"https://www.youtube.com/embed/{video_id}"
 
 
 def validate_url(key: str, value: str) -> None:
