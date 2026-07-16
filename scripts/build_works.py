@@ -46,21 +46,9 @@ PUBLIC_AUTHOR_OVERRIDES = {
     "Play Room": "鈴木 ひなの・中山 大成・松浦 恵夢・村山 海",
 }
 SOCIAL_LINKS = (
-    (
-        "x",
-        "X",
-        '<svg class="sns-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4l14 16M19 4L5 20"/></svg>',
-    ),
-    (
-        "instagram",
-        "Instagram",
-        '<svg class="sns-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle class="sns-icon-fill" cx="17.5" cy="6.7" r="1"/></svg>',
-    ),
-    (
-        "steam",
-        "Steam",
-        '<svg class="sns-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="15.8" cy="8.2" r="3.2"/><circle cx="7.2" cy="16.2" r="2.5"/><path d="M9.3 14.8l4-3.9M4 14.8l1.2.5"/></svg>',
-    ),
+    ("x", "X", "x"),
+    ("instagram", "Instagram", "instagram"),
+    ("steam", "Steam", "steam"),
     (
         "website",
         "Website",
@@ -161,11 +149,16 @@ def media_links_html(work_id: str, title: str) -> tuple[str, str]:
         video_markup = ""
 
     items = []
-    for key, label, icon in SOCIAL_LINKS:
+    for key, label, icon_source in SOCIAL_LINKS:
         url = links.get(key, "")
         if not url:
             continue
         escaped_url = html.escape(url, quote=True)
+        if icon_source.startswith("<svg"):
+            icon = icon_source
+        else:
+            icon_url = f"https://cdn.simpleicons.org/{icon_source}/8358d0?viewbox=auto"
+            icon = f'<img class="sns-icon sns-icon-cdn" src="{icon_url}" alt="" loading="lazy">'
         items.append(
             f'''      <li><a class="sns-link sns-link-{key}" href="{escaped_url}" target="_blank" rel="noopener noreferrer" aria-label="{label}を開く">{icon}<span class="sns-label">{label}</span></a></li>'''
         )

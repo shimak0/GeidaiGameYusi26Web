@@ -143,9 +143,12 @@
     .carousel-frame {
       display: grid;
       place-items: center;
-      border: 2px solid var(--line);
       background: var(--white);
       overflow: hidden;
+    }
+
+    .video-box {
+      border: 2px solid var(--line);
     }
 
     .hero-image {
@@ -308,8 +311,7 @@
 
     .sns-link:hover,
     .sns-link:focus-visible {
-      background: var(--purple);
-      color: var(--white);
+      background: #e8e0f5;
       transform: translateY(-3px);
     }
 
@@ -326,6 +328,11 @@
     .sns-icon-fill {
       fill: currentColor;
       stroke: none;
+    }
+
+    .sns-icon-cdn {
+      display: block;
+      object-fit: contain;
     }
 
     .sns-label {
@@ -430,9 +437,7 @@
     }
 
     @media (max-width: 520px) {
-      .hero-image,
-      .video-box,
-      .carousel-frame {
+      .video-box {
         border-width: 1px;
       }
 
