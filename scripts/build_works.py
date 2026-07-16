@@ -5,9 +5,11 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import html
 import re
 import unicodedata
+from functools import lru_cache
 from pathlib import Path
 
 from work_links import parse_links, youtube_embed_url
@@ -127,11 +129,22 @@ def public_description(value: str) -> str:
     return re.split(r"\s*[（(]?←", value, maxsplit=1)[0].rstrip()
 
 
-def existing_work_image_url(work_id: str, basename: str) -> str | None:
+@lru_cache(maxsize=None)
+def file_content_hash(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()[:12]
+
+
+def existing_work_image_url(work_id: str, basename: str, relative_prefix: str) -> str | None:
     directory = ROOT / "Image" / "works" / work_id
     for extension in (".jpg", ".png"):
-        if (directory / f"{basename}{extension}").exists():
-            return f"../Image/works/{work_id}/{basename}{extension}"
+        path = directory / f"{basename}{extension}"
+        if path.exists():
+            version = file_content_hash(path)
+            return f"{relative_prefix}Image/works/{work_id}/{basename}{extension}?v={version}"
     return None
 
 
@@ -175,9 +188,14 @@ def card_html(work: dict[str, str]) -> str:
     title = html.escape(work["作品タイトル（日本語）"])
     author = escape_lines(work["名前（日本語表記）"])
     work_id = work["id"]
+    image_url = (
+        existing_work_image_url(work_id, "thumbnail", "")
+        or existing_work_image_url(work_id, "main", "")
+        or f"Image/works/{work_id}/main.jpg"
+    )
     return f'''        <a class="work-card" href="works/{work_id}.html">
           <div class="work-thumb">
-            <img src="Image/works/{work_id}/thumbnail.jpg" data-fallback-srcs="Image/works/{work_id}/thumbnail.png,Image/works/{work_id}/main.jpg,Image/works/{work_id}/main.png" alt="{title}" loading="lazy" data-optional-image>
+            <img src="{image_url}" alt="{title}" loading="lazy" data-optional-image>
           </div>
           <h3 class="work-title">{title}</h3>
           <p class="work-author">{author}</p>
@@ -194,6 +212,10 @@ def detail_html(work: dict[str, str]) -> str:
     description_raw = public_description(work["コンセプト・遊び方など"])
     description = escape_lines(description_raw)
     work_id = work["id"]
+    main_image_url = (
+        existing_work_image_url(work_id, "main", "../")
+        or f"../Image/works/{work_id}/main.jpg"
+    )
     video_markup, social_markup = media_links_html(work_id, title_ja)
     title_en_markup = (
         f'\n        <span class="work-title-en" lang="en">{title_en}</span>'
@@ -206,7 +228,7 @@ def detail_html(work: dict[str, str]) -> str:
     gallery_urls = [
         (number, url)
         for number in range(1, 6)
-        if (url := existing_work_image_url(work_id, f"gallery-{number:02d}"))
+        if (url := existing_work_image_url(work_id, f"gallery-{number:02d}", "../"))
     ]
     carousel_images = "\n".join(
         f'''            <img class="carousel-image" src="{url}" alt="{title_ja} 作品画像 {number}"{"" if index == 0 else " hidden"}>'''
@@ -243,7 +265,7 @@ def detail_html(work: dict[str, str]) -> str:
   <main>
     <section class="hero-image" aria-label="{title_ja} メイン画像">
       <span class="image-placeholder">作品画像準備中</span>
-      <img src="../Image/works/{work_id}/main.jpg" data-fallback-src="../Image/works/{work_id}/main.png" alt="{title_ja}" data-optional-image>
+      <img src="{main_image_url}" alt="{title_ja}" data-optional-image>
     </section>
 
     <section class="work-info" aria-labelledby="work-title">
