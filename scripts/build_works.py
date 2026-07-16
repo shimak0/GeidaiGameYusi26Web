@@ -121,7 +121,7 @@ def card_html(work: dict[str, str]) -> str:
     work_id = work["id"]
     return f'''        <a class="work-card" href="works/{work_id}.html">
           <div class="work-thumb">
-            <img src="Image/works/{work_id}/thumbnail.jpg" data-fallback-src="Image/works/{work_id}/thumbnail.png" alt="{title}" loading="lazy" data-optional-image>
+            <img src="Image/works/{work_id}/thumbnail.jpg" data-fallback-srcs="Image/works/{work_id}/thumbnail.png,Image/works/{work_id}/main.jpg,Image/works/{work_id}/main.png" alt="{title}" loading="lazy" data-optional-image>
           </div>
           <h3 class="work-title">{title}</h3>
           <p class="work-author">{author}</p>
@@ -146,10 +146,12 @@ def detail_html(work: dict[str, str]) -> str:
     author_en_markup = (
         f' <span class="work-author-en" lang="en">/ {author_en}</span>' if author_en else ""
     )
-    gallery_items = "\n".join(
-        f'''        <li class="gallery-item">
-          <img src="../Image/works/{work_id}/gallery-{number:02d}.jpg" data-fallback-src="../Image/works/{work_id}/gallery-{number:02d}.png" alt="{title_ja} 作品画像 {number}" loading="lazy" data-optional-image>
-        </li>'''
+    carousel_images = "\n".join(
+        f'''            <img class="carousel-image" src="../Image/works/{work_id}/gallery-{number:02d}.jpg" data-fallback-src="../Image/works/{work_id}/gallery-{number:02d}.png" alt="{title_ja} 作品画像 {number}" loading="lazy" hidden>'''
+        for number in range(1, 6)
+    )
+    carousel_dots = "\n".join(
+        f'        <button class="carousel-dot" type="button" aria-label="作品画像 {number} を表示" data-carousel-dot="{number - 1}"></button>'
         for number in range(1, 6)
     )
 
@@ -188,11 +190,31 @@ def detail_html(work: dict[str, str]) -> str:
       <p class="work-description">{description}</p>
     </section>
 
-    <section class="gallery" aria-label="作品画像" data-optional-gallery>
-      <ul class="gallery-track">
-{gallery_items}
-      </ul>
+    <section class="carousel" aria-label="作品画像スライダー" data-carousel>
+      <div class="carousel-track">
+        <button class="carousel-side prev" type="button" aria-label="前の作品画像" data-carousel-prev></button>
+        <div class="carousel-frame">
+          <span class="carousel-placeholder">作品画像<br>（3 から 5 枚程度，無くても可）</span>
+          <div class="carousel-images">
+{carousel_images}
+          </div>
+        </div>
+        <button class="carousel-side next" type="button" aria-label="次の作品画像" data-carousel-next></button>
+      </div>
+      <div class="carousel-dots">
+{carousel_dots}
+      </div>
     </section>
+
+    <section class="video-box" aria-label="作品映像">
+      映像<br>（YoutubeURL 等，無くても可）
+    </section>
+
+    <ul class="sns-links" aria-label="SNSリンク">
+      <li><span class="sns-link" aria-disabled="true"><span class="sns-label">SNS 1</span></span></li>
+      <li><span class="sns-link" aria-disabled="true"><span class="sns-label">SNS 2</span></span></li>
+      <li><span class="sns-link" aria-disabled="true"><span class="sns-label">SNS 3</span></span></li>
+    </ul>
 
     <div class="back-wrap">
       <a class="back-button" href="../index.html#works">BACK</a>

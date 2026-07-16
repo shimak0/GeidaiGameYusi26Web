@@ -9,8 +9,8 @@ Drive から ZIP ダウンロードした後、ZIP をこのリポジトリの `
 
 ```text
 work-01/
-  thumbnail.jpg   必須：一覧用画像
   main.png        必須：作品ページのメイン画像
+  thumbnail.jpg   任意：一覧用画像
   gallery-01.jpg  任意：作品ページの追加画像
   gallery-02.png  任意
 ```
@@ -24,11 +24,16 @@ work-01/
 - 推奨サイズ：
   - `thumbnail`：1280 × 720 px
   - `main`、`gallery-XX`：1920 × 1080 px
+- `thumbnail` がない場合は `main` が一覧画像として使用される
 - 上限：1ファイル10MB
 - 追加画像は `gallery-01` から番号を飛ばさずに命名
 - ZIP内にGoogle Driveが作る親フォルダが含まれていても取り込み可能
 
-ファイル名が異なる画像、JPEG・PNG以外の画像、必須画像が不足した作品は取り込まれません。
+ファイル名が異なる画像、JPEG・PNG以外の画像、`main` が不足した作品は取り込まれません。
+
+作品画像が未提出の場合は、運営側で用意した `coming soon...` 画像を `main.jpg` として使用します。
+後日、作家から提出された画像で同名の `main.jpg` または `main.png` を置き換えてください。
+`thumbnail` が未提出の場合、一覧ページには同じ `main` 画像が自動的に表示されます。
 
 ## 作品ID対応表
 

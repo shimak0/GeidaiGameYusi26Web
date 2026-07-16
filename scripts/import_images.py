@@ -12,8 +12,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 WORK_ID = re.compile(r"work-(0[1-9]|1[0-9]|2[01])$")
-REQUIRED_BASENAMES = {"thumbnail", "main"}
-OPTIONAL_BASENAMES = {f"gallery-{number:02d}" for number in range(1, 6)}
+REQUIRED_BASENAMES = {"main"}
+OPTIONAL_BASENAMES = {"thumbnail"} | {f"gallery-{number:02d}" for number in range(1, 6)}
 ALLOWED_BASENAMES = REQUIRED_BASENAMES | OPTIONAL_BASENAMES
 ALLOWED_EXTENSIONS = {".jpg", ".png"}
 MAX_BYTES = 10 * 1024 * 1024
