@@ -242,6 +242,8 @@
       font-size: clamp(22px, 2.2vw, 36px);
       line-height: 1.45;
       text-align: center;
+      touch-action: pan-y;
+      user-select: none;
     }
 
     .carousel-dots {

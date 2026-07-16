@@ -231,13 +231,30 @@ def detail_html(work: dict[str, str]) -> str:
         if (url := existing_work_image_url(work_id, f"gallery-{number:02d}", "../"))
     ]
     carousel_images = "\n".join(
-        f'''            <img class="carousel-image" src="{url}" alt="{title_ja} 作品画像 {number}"{"" if index == 0 else " hidden"}>'''
+        f'''            <img class="carousel-image" src="{url}" alt="{title_ja} 作品画像 {number}" draggable="false"{"" if index == 0 else " hidden"}>'''
         for index, (number, url) in enumerate(gallery_urls)
     )
-    dot_count = len(gallery_urls) if gallery_urls else 3
     carousel_dots = "\n".join(
         f'        <button class="carousel-dot" type="button" aria-label="作品画像 {number} を表示" data-carousel-dot="{number - 1}"></button>'
-        for number in range(1, dot_count + 1)
+        for number in range(1, len(gallery_urls) + 1)
+    )
+    carousel_markup = (
+        f'''    <section class="carousel" aria-label="作品画像スライダー" data-carousel>
+      <div class="carousel-track">
+        <button class="carousel-side prev" type="button" aria-label="前の作品画像" data-carousel-prev></button>
+        <div class="carousel-frame">
+          <div class="carousel-images">
+{carousel_images}
+          </div>
+        </div>
+        <button class="carousel-side next" type="button" aria-label="次の作品画像" data-carousel-next></button>
+      </div>
+      <div class="carousel-dots">
+{carousel_dots}
+      </div>
+    </section>'''
+        if gallery_urls
+        else ""
     )
 
     return f'''<!doctype html>
@@ -275,21 +292,7 @@ def detail_html(work: dict[str, str]) -> str:
       <p class="work-description">{description}</p>
     </section>
 
-    <section class="carousel" aria-label="作品画像スライダー" data-carousel>
-      <div class="carousel-track">
-        <button class="carousel-side prev" type="button" aria-label="前の作品画像" data-carousel-prev></button>
-        <div class="carousel-frame">
-          <span class="carousel-placeholder">作品画像<br>（3 から 5 枚程度，無くても可）</span>
-          <div class="carousel-images">
-{carousel_images}
-          </div>
-        </div>
-        <button class="carousel-side next" type="button" aria-label="次の作品画像" data-carousel-next></button>
-      </div>
-      <div class="carousel-dots">
-{carousel_dots}
-      </div>
-    </section>
+{carousel_markup}
 
 {video_markup}
 
