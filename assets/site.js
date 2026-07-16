@@ -70,12 +70,13 @@ const loadCarouselImage = (image) =>
 document.querySelectorAll("[data-carousel]").forEach(async (carousel) => {
   const images = [...carousel.querySelectorAll(".carousel-image")];
   const dots = [...carousel.querySelectorAll("[data-carousel-dot]")];
-  const placeholder = carousel.querySelector(".carousel-placeholder");
+  const frame = carousel.querySelector(".carousel-frame");
   const prevButton = carousel.querySelector("[data-carousel-prev]");
   const nextButton = carousel.querySelector("[data-carousel-next]");
   const availability = await Promise.all(images.map(loadCarouselImage));
   const availableImages = images.filter((_, index) => availability[index]);
   let currentIndex = 0;
+  let pointerStart = null;
 
   const render = () => {
     images.forEach((image) => {
@@ -89,17 +90,10 @@ document.querySelectorAll("[data-carousel]").forEach(async (carousel) => {
     });
 
     if (availableImages.length === 0) {
-      placeholder.hidden = false;
-      dots.slice(0, 3).forEach((dot, index) => {
-        dot.hidden = false;
-        dot.classList.toggle("is-active", index === 0);
-      });
-      prevButton.disabled = true;
-      nextButton.disabled = true;
+      carousel.hidden = true;
       return;
     }
 
-    placeholder.hidden = true;
     availableImages[currentIndex].hidden = false;
     dots.slice(0, availableImages.length).forEach((dot, index) => {
       dot.hidden = false;
@@ -113,15 +107,20 @@ document.querySelectorAll("[data-carousel]").forEach(async (carousel) => {
     nextButton.disabled = availableImages.length < 2;
   };
 
-  prevButton.addEventListener("click", () => {
+  const showPrevious = () => {
+    if (availableImages.length < 2) return;
     currentIndex = (currentIndex - 1 + availableImages.length) % availableImages.length;
     render();
-  });
+  };
 
-  nextButton.addEventListener("click", () => {
+  const showNext = () => {
+    if (availableImages.length < 2) return;
     currentIndex = (currentIndex + 1) % availableImages.length;
     render();
-  });
+  };
+
+  prevButton.addEventListener("click", showPrevious);
+  nextButton.addEventListener("click", showNext);
 
   dots.forEach((dot, index) => {
     dot.addEventListener("click", () => {
@@ -129,6 +128,28 @@ document.querySelectorAll("[data-carousel]").forEach(async (carousel) => {
       currentIndex = index;
       render();
     });
+  });
+
+  frame.addEventListener("pointerdown", (event) => {
+    if (!event.isPrimary || availableImages.length < 2) return;
+    pointerStart = { x: event.clientX, y: event.clientY };
+  });
+
+  frame.addEventListener("pointerup", (event) => {
+    if (!pointerStart || !event.isPrimary) return;
+    const deltaX = event.clientX - pointerStart.x;
+    const deltaY = event.clientY - pointerStart.y;
+    pointerStart = null;
+    if (Math.abs(deltaX) < 48 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+    if (deltaX < 0) {
+      showNext();
+    } else {
+      showPrevious();
+    }
+  });
+
+  frame.addEventListener("pointercancel", () => {
+    pointerStart = null;
   });
 
   render();

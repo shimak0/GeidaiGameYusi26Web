@@ -5,9 +5,11 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import html
 import re
 import unicodedata
+from functools import lru_cache
 from pathlib import Path
 
 from work_links import parse_links, youtube_embed_url
@@ -46,21 +48,9 @@ PUBLIC_AUTHOR_OVERRIDES = {
     "Play Room": "鈴木 ひなの・中山 大成・松浦 恵夢・村山 海",
 }
 SOCIAL_LINKS = (
-    (
-        "x",
-        "X",
-        '<svg class="sns-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4l14 16M19 4L5 20"/></svg>',
-    ),
-    (
-        "instagram",
-        "Instagram",
-        '<svg class="sns-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle class="sns-icon-fill" cx="17.5" cy="6.7" r="1"/></svg>',
-    ),
-    (
-        "steam",
-        "Steam",
-        '<svg class="sns-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="15.8" cy="8.2" r="3.2"/><circle cx="7.2" cy="16.2" r="2.5"/><path d="M9.3 14.8l4-3.9M4 14.8l1.2.5"/></svg>',
-    ),
+    ("x", "X", "x"),
+    ("instagram", "Instagram", "instagram"),
+    ("steam", "Steam", "steam"),
     (
         "website",
         "Website",
@@ -139,11 +129,22 @@ def public_description(value: str) -> str:
     return re.split(r"\s*[（(]?←", value, maxsplit=1)[0].rstrip()
 
 
-def existing_work_image_url(work_id: str, basename: str) -> str | None:
+@lru_cache(maxsize=None)
+def file_content_hash(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()[:12]
+
+
+def existing_work_image_url(work_id: str, basename: str, relative_prefix: str) -> str | None:
     directory = ROOT / "Image" / "works" / work_id
     for extension in (".jpg", ".png"):
-        if (directory / f"{basename}{extension}").exists():
-            return f"../Image/works/{work_id}/{basename}{extension}"
+        path = directory / f"{basename}{extension}"
+        if path.exists():
+            version = file_content_hash(path)
+            return f"{relative_prefix}Image/works/{work_id}/{basename}{extension}?v={version}"
     return None
 
 
@@ -161,11 +162,16 @@ def media_links_html(work_id: str, title: str) -> tuple[str, str]:
         video_markup = ""
 
     items = []
-    for key, label, icon in SOCIAL_LINKS:
+    for key, label, icon_source in SOCIAL_LINKS:
         url = links.get(key, "")
         if not url:
             continue
         escaped_url = html.escape(url, quote=True)
+        if icon_source.startswith("<svg"):
+            icon = icon_source
+        else:
+            icon_url = f"https://cdn.simpleicons.org/{icon_source}/8358d0?viewbox=auto"
+            icon = f'<img class="sns-icon sns-icon-cdn" src="{icon_url}" alt="" loading="lazy">'
         items.append(
             f'''      <li><a class="sns-link sns-link-{key}" href="{escaped_url}" target="_blank" rel="noopener noreferrer" aria-label="{label}を開く">{icon}<span class="sns-label">{label}</span></a></li>'''
         )
@@ -182,9 +188,14 @@ def card_html(work: dict[str, str]) -> str:
     title = html.escape(work["作品タイトル（日本語）"])
     author = escape_lines(work["名前（日本語表記）"])
     work_id = work["id"]
+    image_url = (
+        existing_work_image_url(work_id, "thumbnail", "")
+        or existing_work_image_url(work_id, "main", "")
+        or f"Image/works/{work_id}/main.jpg"
+    )
     return f'''        <a class="work-card" href="works/{work_id}.html">
           <div class="work-thumb">
-            <img src="Image/works/{work_id}/thumbnail.jpg" data-fallback-srcs="Image/works/{work_id}/thumbnail.png,Image/works/{work_id}/main.jpg,Image/works/{work_id}/main.png" alt="{title}" loading="lazy" data-optional-image>
+            <img src="{image_url}" alt="{title}" loading="lazy" data-optional-image>
           </div>
           <h3 class="work-title">{title}</h3>
           <p class="work-author">{author}</p>
@@ -201,6 +212,10 @@ def detail_html(work: dict[str, str]) -> str:
     description_raw = public_description(work["コンセプト・遊び方など"])
     description = escape_lines(description_raw)
     work_id = work["id"]
+    main_image_url = (
+        existing_work_image_url(work_id, "main", "../")
+        or f"../Image/works/{work_id}/main.jpg"
+    )
     video_markup, social_markup = media_links_html(work_id, title_ja)
     title_en_markup = (
         f'\n        <span class="work-title-en" lang="en">{title_en}</span>'
@@ -213,16 +228,33 @@ def detail_html(work: dict[str, str]) -> str:
     gallery_urls = [
         (number, url)
         for number in range(1, 6)
-        if (url := existing_work_image_url(work_id, f"gallery-{number:02d}"))
+        if (url := existing_work_image_url(work_id, f"gallery-{number:02d}", "../"))
     ]
     carousel_images = "\n".join(
-        f'''            <img class="carousel-image" src="{url}" alt="{title_ja} 作品画像 {number}"{"" if index == 0 else " hidden"}>'''
+        f'''            <img class="carousel-image" src="{url}" alt="{title_ja} 作品画像 {number}" draggable="false"{"" if index == 0 else " hidden"}>'''
         for index, (number, url) in enumerate(gallery_urls)
     )
-    dot_count = len(gallery_urls) if gallery_urls else 3
     carousel_dots = "\n".join(
         f'        <button class="carousel-dot" type="button" aria-label="作品画像 {number} を表示" data-carousel-dot="{number - 1}"></button>'
-        for number in range(1, dot_count + 1)
+        for number in range(1, len(gallery_urls) + 1)
+    )
+    carousel_markup = (
+        f'''    <section class="carousel" aria-label="作品画像スライダー" data-carousel>
+      <div class="carousel-track">
+        <button class="carousel-side prev" type="button" aria-label="前の作品画像" data-carousel-prev></button>
+        <div class="carousel-frame">
+          <div class="carousel-images">
+{carousel_images}
+          </div>
+        </div>
+        <button class="carousel-side next" type="button" aria-label="次の作品画像" data-carousel-next></button>
+      </div>
+      <div class="carousel-dots">
+{carousel_dots}
+      </div>
+    </section>'''
+        if gallery_urls
+        else ""
     )
 
     return f'''<!doctype html>
@@ -250,7 +282,7 @@ def detail_html(work: dict[str, str]) -> str:
   <main>
     <section class="hero-image" aria-label="{title_ja} メイン画像">
       <span class="image-placeholder">作品画像準備中</span>
-      <img src="../Image/works/{work_id}/main.jpg" data-fallback-src="../Image/works/{work_id}/main.png" alt="{title_ja}" data-optional-image>
+      <img src="{main_image_url}" alt="{title_ja}" data-optional-image>
     </section>
 
     <section class="work-info" aria-labelledby="work-title">
@@ -260,21 +292,7 @@ def detail_html(work: dict[str, str]) -> str:
       <p class="work-description">{description}</p>
     </section>
 
-    <section class="carousel" aria-label="作品画像スライダー" data-carousel>
-      <div class="carousel-track">
-        <button class="carousel-side prev" type="button" aria-label="前の作品画像" data-carousel-prev></button>
-        <div class="carousel-frame">
-          <span class="carousel-placeholder">作品画像<br>（3 から 5 枚程度，無くても可）</span>
-          <div class="carousel-images">
-{carousel_images}
-          </div>
-        </div>
-        <button class="carousel-side next" type="button" aria-label="次の作品画像" data-carousel-next></button>
-      </div>
-      <div class="carousel-dots">
-{carousel_dots}
-      </div>
-    </section>
+{carousel_markup}
 
 {video_markup}
 
