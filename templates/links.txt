@@ -2,6 +2,7 @@
 # 空欄の項目は作品ページに表示されません。
 
 youtube:
+youtube_channel:
 x:
 instagram:
 steam:

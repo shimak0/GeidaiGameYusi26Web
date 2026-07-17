@@ -82,6 +82,7 @@ PNGも使用できます。
 記入例：
 
 youtube: https://www.youtube.com/watch?v=xxxxxxxxxxx
+youtube_channel: https://www.youtube.com/@example
 x: https://x.com/example
 instagram: https://www.instagram.com/example/
 steam: https://store.steampowered.com/app/000000/example/
@@ -92,9 +93,14 @@ website: https://example.com/
 ・YouTubeは「公開」または「限定公開」にしてください
 ・YouTube側で外部サイトへの埋め込みを許可してください
 ・閲覧制限のある動画はWebサイトに埋め込めない場合があります
+・youtubeは動画の埋め込み、youtube_channelはYouTubeチャンネルへのアイコンリンクに使用します
+・チャンネルURLをyoutubeに記入した場合も、自動的にチャンネルリンクとして取り込まれます
 
 links.txtにないSNSやサービスも追加できる場合があります。
 独自の項目名をlinks.txtへ追加せず、掲載したいサービス名とURLを運営担当者へご連絡ください。
+
+Googleドキュメントで編集した結果、ファイル名が links.docx または links.txt.docx になった場合も、そのまま提出できます。
+取り込み時に links.txt へ自動変換されます。
 
 
 6. ファイル名に関する注意
@@ -106,7 +112,7 @@ main
 thumbnail
 gallery-01 ～ gallery-05
 
-拡張子は小文字の .jpg または .png にしてください。
+ファイル名と拡張子の大文字・小文字は区別されず、取り込み時に小文字へ統一されます。
 同じ名前のJPEGとPNGを両方置かないでください。
 
 例：

@@ -2,7 +2,7 @@
 # 空欄の項目は作品ページに表示されません。
 
 youtube:https://youtu.be/06cbq8VoJ94
-x:https://x.com/geidaigames
-instagram:https://www.instagram.com/geidai_gameinteractiveart/
+x:
+instagram:
 steam:https://store.steampowered.com/app/3910660
-website:https://games.geidai.ac.jp/2026/respawn/
+website:

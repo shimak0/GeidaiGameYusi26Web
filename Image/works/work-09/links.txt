@@ -1,8 +1,6 @@
-# 掲載を希望する項目だけ、コロンの右側に https:// から始まるURLを記入してください。
-# 空欄の項目は作品ページに表示されません。
-
 youtube:
+youtube_channel: https://www.youtube.com/@punk_addictor
 x:
-instagram:
+instagram: https://www.instagram.com/punk_addict0r/
 steam:
 website:

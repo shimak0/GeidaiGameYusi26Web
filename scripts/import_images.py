@@ -8,9 +8,11 @@ import re
 import shutil
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
+from xml.etree import ElementTree
 
-from work_links import parse_links
+from work_links import LINK_KEYS, MAX_LINKS_BYTES, parse_links, parse_links_text
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -43,7 +45,12 @@ OPTIONAL_BASENAMES = {"thumbnail"} | {f"gallery-{number:02d}" for number in rang
 ALLOWED_BASENAMES = REQUIRED_BASENAMES | OPTIONAL_BASENAMES
 ALLOWED_EXTENSIONS = {".jpg", ".png"}
 LINKS_FILENAME = "links.txt"
+LINKS_DOCX_FILENAMES = {"links.docx", "links.txt.docx"}
+LINKS_FILENAMES = {LINKS_FILENAME} | LINKS_DOCX_FILENAMES
 MAX_BYTES = 10 * 1024 * 1024
+MAX_DOCX_BYTES = 1024 * 1024
+MAX_DOCX_XML_BYTES = 256 * 1024
+WORD_NAMESPACE = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 
 
 def work_id_from_folder_name(folder_name: str) -> str | None:
@@ -75,15 +82,68 @@ def image_directories(incoming: Path) -> list[tuple[str, Path]]:
     return sorted(directories)
 
 
+def parse_links_docx(path: Path) -> dict[str, str]:
+    if path.stat().st_size > MAX_DOCX_BYTES:
+        raise ValueError("linksのDOCXファイルが1MBを超えています")
+    try:
+        with zipfile.ZipFile(path) as archive:
+            document_info = archive.getinfo("word/document.xml")
+            if document_info.file_size > MAX_DOCX_XML_BYTES:
+                raise ValueError("linksのDOCX文書データが256KBを超えています")
+            document_xml = archive.read("word/document.xml")
+        document = ElementTree.fromstring(document_xml)
+    except (KeyError, ElementTree.ParseError, zipfile.BadZipFile) as error:
+        raise ValueError("linksのDOCXファイルを読み取れません") from error
+
+    namespace = f"{{{WORD_NAMESPACE}}}"
+    lines = []
+    for paragraph in document.iter(f"{namespace}p"):
+        parts = []
+        for node in paragraph.iter():
+            if node.tag == f"{namespace}t" and node.text:
+                parts.append(node.text)
+            elif node.tag == f"{namespace}tab":
+                parts.append("\t")
+            elif node.tag in {f"{namespace}br", f"{namespace}cr"}:
+                parts.append("\n")
+        lines.append("".join(parts))
+    text = "\n".join(lines)
+    if len(text.encode("utf-8")) > MAX_LINKS_BYTES:
+        raise ValueError("linksのDOCX内容が16KBを超えています")
+    return parse_links_text(text)
+
+
+def parse_submission_links(path: Path) -> dict[str, str]:
+    if path.name.lower() in LINKS_DOCX_FILENAMES:
+        return parse_links_docx(path)
+    return parse_links(path)
+
+
+def formatted_links(links: dict[str, str]) -> str:
+    lines = [f"{key}: {links[key]}" if links.get(key) else f"{key}:" for key in LINK_KEYS]
+    return "\n".join(lines) + "\n"
+
+
 def validate(directory: Path) -> list[Path]:
-    files = [path for path in directory.iterdir() if path.is_file() and path.name != ".DS_Store"]
-    image_files = [path for path in files if path.name != LINKS_FILENAME]
+    files = [
+        path
+        for path in directory.iterdir()
+        if path.is_file() and path.name.lower() != ".ds_store"
+    ]
+    links_files = [path for path in files if path.name.lower() in LINKS_FILENAMES]
+    if len(links_files) > 1:
+        raise ValueError("links.txt または links.txt.docx が複数あります")
+
+    image_files = [path for path in files if path.name.lower() not in LINKS_FILENAMES]
     unexpected = {
         path.name
         for path in image_files
-        if path.stem not in ALLOWED_BASENAMES or path.suffix not in ALLOWED_EXTENSIONS
+        if path.stem.lower() not in ALLOWED_BASENAMES
+        or path.suffix.lower() not in ALLOWED_EXTENSIONS
     }
-    basenames = {path.stem for path in image_files if path.name not in unexpected}
+    basenames = {
+        path.stem.lower() for path in image_files if path.name not in unexpected
+    }
     missing = REQUIRED_BASENAMES - basenames
     if missing:
         required_names = ", ".join(
@@ -96,12 +156,10 @@ def validate(directory: Path) -> list[Path]:
     duplicates = {
         basename
         for basename in basenames
-        if sum(path.stem == basename for path in image_files) > 1
+        if sum(path.stem.lower() == basename for path in image_files) > 1
     }
     if duplicates:
-        raise ValueError(
-            "同じ画像のJPEGとPNGが両方あります: " + ", ".join(sorted(duplicates))
-        )
+        raise ValueError("同じ画像名が複数あります: " + ", ".join(sorted(duplicates)))
 
     gallery_numbers = sorted(
         int(basename.removeprefix("gallery-"))
@@ -120,12 +178,11 @@ def validate(directory: Path) -> list[Path]:
             capture_output=True,
             text=True,
         )
-        expected_mime = "image/jpeg" if path.suffix == ".jpg" else "image/png"
+        expected_mime = "image/jpeg" if path.suffix.lower() == ".jpg" else "image/png"
         if result.stdout.strip() != expected_mime:
             raise ValueError(f"拡張子と画像形式が一致しません: {path.name}")
-    links_path = directory / LINKS_FILENAME
-    if links_path.exists():
-        parse_links(links_path)
+    if links_files:
+        parse_submission_links(links_files[0])
     return sorted(files)
 
 
@@ -158,18 +215,26 @@ def main() -> None:
             continue
         destination = ROOT / "Image" / "works" / work_id
         destination.mkdir(parents=True, exist_ok=True)
-        existing_links = destination / LINKS_FILENAME
-        if existing_links.exists():
-            existing_links.unlink()
         for old_file in destination.iterdir():
             if (
                 old_file.is_file()
-                and old_file.stem in ALLOWED_BASENAMES
-                and old_file.suffix in ALLOWED_EXTENSIONS
+                and (
+                    old_file.name.lower() in LINKS_FILENAMES
+                    or (
+                        old_file.stem.lower() in ALLOWED_BASENAMES
+                        and old_file.suffix.lower() in ALLOWED_EXTENSIONS
+                    )
+                )
             ):
                 old_file.unlink()
         for source in files:
-            shutil.copy2(source, destination / source.name)
+            if source.name.lower() in LINKS_DOCX_FILENAMES:
+                links = parse_links_docx(source)
+                (destination / LINKS_FILENAME).write_text(
+                    formatted_links(links), encoding="utf-8"
+                )
+            else:
+                shutil.copy2(source, destination / source.name.lower())
         print(f"IMPORTED {directory.name} -> {work_id}: {len(files)} files")
 
     if args.check:

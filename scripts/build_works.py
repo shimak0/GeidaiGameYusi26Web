@@ -48,6 +48,7 @@ PUBLIC_AUTHOR_OVERRIDES = {
     "Play Room": "鈴木 ひなの・中山 大成・松浦 恵夢・村山 海",
 }
 SOCIAL_LINKS = (
+    ("youtube_channel", "YouTube", "youtube"),
     ("x", "X", "x"),
     ("instagram", "Instagram", "instagram"),
     ("steam", "Steam", "steam"),

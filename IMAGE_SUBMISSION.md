@@ -17,7 +17,7 @@ work-01-cest-bones/
 ```
 
 - ファイル形式：JPEGまたはPNG
-- 拡張子：小文字の `.jpg` または `.png`
+- ファイル名と拡張子の大文字・小文字は区別せず、取り込み時に小文字へ統一される
 - 同じ画像名についてJPEGとPNGの両方を入れない
 - 写真は容量を抑えやすいJPEG、透過が必要な画像はPNGを推奨
 - カラーモード：RGB
@@ -43,17 +43,21 @@ work-01-cest-bones/
 
 ```text
 youtube: https://www.youtube.com/watch?v=xxxxxxxxxxx
+youtube_channel: https://www.youtube.com/@example
 x: https://x.com/example
 instagram: https://www.instagram.com/example/
 steam: https://store.steampowered.com/app/000000/example/
 website: https://example.com/
 ```
 
-- ファイル名は正確に `links.txt`
+- ファイル名は `links.txt`（大文字・小文字は区別せず、取り込み時に小文字へ統一）
+- Googleドキュメント経由で保存された `links.docx`、`links.txt.docx` も受付可能で、取り込み時に `links.txt` へ変換される
 - 文字コードはUTF-8
 - URLは `https://` から記入
 - キー名は変更しない
 - YouTubeは動画ページ、短縮URL、Shorts、LiveのURLに対応
+- `youtube` は動画埋め込み、`youtube_channel` はYouTubeアイコン付きのチャンネルリンクとして表示
+- チャンネルURLが `youtube` に記入されていても、自動的にチャンネルリンクとして取り込まれる
 - X、Instagram、Steamは各サービスの正規ドメインのみ受付
 - `website` は任意のHTTPSサイトを指定可能
 - 不正URL、未知のキー、キー重複がある場合は取り込みを停止
