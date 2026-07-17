@@ -1,6 +1,6 @@
 youtube:
 youtube_channel: https://www.youtube.com/@punk_addictor
 x:
-instagram: https://www.instagram.com/punk_addict0r/
+instagram: https://www.instagram.com/p/Da4OKEQkrku/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==
 steam:
 website:
