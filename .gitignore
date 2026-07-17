@@ -29,3 +29,6 @@ docs/
 
 # Extracted artist submissions (run scripts/import_images.py to import)
 incoming/
+
+# Generated production package
+GeidaiGameYusi26Web-production.zip
