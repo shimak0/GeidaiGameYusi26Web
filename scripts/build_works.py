@@ -264,6 +264,7 @@ def detail_html(work: dict[str, str]) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="{html.escape(description_raw[:120])}">
   <title>{title_ja} | RESPAWN</title>
+  <link rel="icon" href="../assets/favicon.png" type="image/png">
   <link rel="stylesheet" href="https://use.typekit.net/qsa7gru.css">
   <link rel="stylesheet" href="../assets/work-detail.css">
 </head>
