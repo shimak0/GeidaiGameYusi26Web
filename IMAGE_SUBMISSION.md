@@ -64,7 +64,7 @@ website: https://example.com/
 - `website` は任意のHTTPSサイトを指定可能
 - 不正URL、未知のキー、キー重複がある場合は取り込みを停止
 
-空の雛形は `templates/links.txt` にあります。
+空の雛形は `submissions/links.txt` にあります。
 
 ## 作品ID対応表
 
@@ -124,7 +124,7 @@ python3 scripts/import_images.py
 
 旧形式の `work-01`〜`work-21` フォルダも取り込み可能です。新旧両方の同じ作品IDがある場合は、重複として取り込みを停止します。
 
-画像と `links.txt` はprefixを使って `Image/works/work-XX/` にコピーされます。同じ作品IDを再度取り込むと、その作品の既存内容を新しい提出内容で置き換えます。
+画像は `public/assets/images/works/work-XX/`、`links.txt` は `source/work-links/work-XX/` に取り込まれます。同じ作品IDを再度取り込むと、その作品の既存内容を新しい提出内容で置き換えます。
 取り込み完了後、作品ページは自動的に再生成されます。
 
 再生成時、メイン画像・一覧画像・ギャラリー画像のURLには、画像内容から算出したクエリパラメータ（例：`main.jpg?v=abc123...`）が自動的に付きます。
@@ -134,7 +134,7 @@ python3 scripts/import_images.py
 
 ## CSVからページを再生成する
 
-作品名やキャプションをCSVで修正した場合は、次のコマンドで `index.html` と全作品ページを再生成します。
+作品名やキャプションを `source/data/works.csv` で修正した場合は、次のコマンドで `public/index.html` と全作品ページを再生成します。
 
 ```sh
 python3 scripts/build_works.py

@@ -24,11 +24,8 @@ Desktop.ini
 __pycache__/
 *.py[cod]
 
-# Docs
-docs/
-
 # Extracted artist submissions (run scripts/import_images.py to import)
 incoming/
 
-# Generated production package
-GeidaiGameYusi26Web-production.zip
+# Generated production packages
+dist/

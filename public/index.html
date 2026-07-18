@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RESPAWN | 一期生有志展</title>
+  <link rel="icon" href="assets/images/favicon.png" type="image/png">
+  <link rel="stylesheet" href="https://use.typekit.net/qsa7gru.css">
+  <style>
+    @font-face {
+      font-family: "Zen Kaku Gothic New";
+      src: url("assets/fonts/zen-kaku-gothic-new/ZenKakuGothicNew-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "Zen Kaku Gothic New";
+      src: url("assets/fonts/zen-kaku-gothic-new/ZenKakuGothicNew-Bold.ttf") format("truetype");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "Zen Kaku Gothic New";
+      src: url("assets/fonts/zen-kaku-gothic-new/ZenKakuGothicNew-Medium.ttf") format("truetype");
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --purple: #8358d0;
+      --page-bg: #fff;
+      --ink: #1b1113;
+      --white: #fff;
+      --content: min(78vw, 1540px);
+      --latin-font: "agenda", Arial, sans-serif;
+      --jp-font: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page-bg);
+      color: var(--ink);
+      font-family: var(--jp-font);
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+      -webkit-user-drag: none;
+      user-select: none;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .hero {
+      background: var(--purple);
+    }
+
+    .hero img {
+      width: 100%;
+      height: auto;
+    }
+
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: grid;
+      align-items: center;
+      min-height: 54px;
+      padding: 0 56px;
+      background: var(--purple);
+      color: var(--white);
+      font-size: clamp(13px, 1.35vw, 19px);
+      line-height: 1;
+    }
+
+    .site-nav ul {
+      display: flex;
+      align-items: center;
+      gap: clamp(36px, 8vw, 160px);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .nav-toggle {
+      display: none;
+      justify-self: end;
+      width: 44px;
+      aspect-ratio: 1;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .nav-toggle span {
+      display: block;
+      width: 28px;
+      height: 3px;
+      margin: 5px auto;
+      background: var(--white);
+      transition: transform 180ms ease, opacity 180ms ease;
+    }
+
+    .site-nav.is-open .nav-toggle span:nth-child(1) {
+      transform: translateY(8px) rotate(45deg);
+    }
+
+    .site-nav.is-open .nav-toggle span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .site-nav.is-open .nav-toggle span:nth-child(3) {
+      transform: translateY(-8px) rotate(-45deg);
+    }
+
+    main {
+      background: var(--page-bg);
+      padding: clamp(70px, 7vw, 150px) 0 0;
+    }
+
+    .section {
+      width: var(--content);
+      margin: 0 auto clamp(90px, 8vw, 180px);
+    }
+
+    .section-heading {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 16px;
+      margin: 0 0 clamp(48px, 5vw, 92px);
+      color: var(--purple);
+      font-size: clamp(22px, 2.2vw, 42px);
+      line-height: 1;
+      text-align: center;
+    }
+
+    .section-heading::before,
+    .section-heading::after {
+      content: "";
+      height: 3px;
+      background: var(--purple);
+    }
+
+    .greeting {
+      max-width: 1080px;
+      margin: 0 auto;
+      color: var(--ink);
+      font-weight: 500;
+      font-size: clamp(18px, 1.55vw, 30px);
+      line-height: 1.82;
+      text-align: justify;
+    }
+
+    .greeting-signature {
+      display: block;
+      text-align: right;
+    }
+
+    .signature-break {
+      display: none;
+    }
+
+    .works-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(56px, 5.2vw, 110px) clamp(34px, 4vw, 74px);
+    }
+
+    .works-grid.is-hidden {
+      display: none;
+    }
+
+    .coming-soon {
+      display: grid;
+      place-items: center;
+      min-height: clamp(180px, 22vw, 320px);
+      color: var(--purple);
+      font-family: var(--latin-font);
+      font-size: clamp(34px, 5vw, 78px);
+      font-weight: 700;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .work-card {
+      min-width: 0;
+    }
+
+    .work-thumb,
+    .map-placeholder {
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background: var(--purple);
+    }
+
+    .work-thumb {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+    }
+
+    .work-thumb img,
+    .map-placeholder img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .work-title {
+      margin: 12px 0 2px;
+      color: var(--ink);
+      font-size: clamp(19px, 1.65vw, 31px);
+      line-height: 1.15;
+    }
+
+    .work-author {
+      margin: 0;
+      color: var(--ink);
+      font-weight: 500;
+      font-size: clamp(13px, 1.1vw, 21px);
+      line-height: 1.3;
+    }
+
+    .info-list {
+      display: grid;
+      gap: clamp(34px, 3vw, 62px);
+      margin: 0;
+      color: var(--ink);
+      font-weight: 500;
+      font-size: clamp(18px, 1.55vw, 30px);
+      line-height: 1.55;
+    }
+
+    .info-list dt {
+      margin: 0 0 4px;
+    }
+
+    .info-list dd {
+      margin: 0;
+    }
+
+    .map-placeholder {
+      width: min(50vw, 900px);
+      aspect-ratio: 16 / 9;
+      margin: clamp(48px, 5vw, 88px) auto 0;
+      background: var(--white);
+      color: var(--ink);
+      font-size: clamp(26px, 2vw, 40px);
+      letter-spacing: 0.08em;
+    }
+
+    .under-image img {
+      width: 100%;
+      height: auto;
+    }
+
+    @media (max-width: 900px) {
+      :root {
+        --content: min(88vw, 720px);
+      }
+
+      .site-nav {
+        position: sticky;
+        justify-items: end;
+        min-height: 54px;
+        padding: 5px 18px;
+      }
+
+      .site-nav ul {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        left: 0;
+        display: none;
+        grid-template-columns: 1fr;
+        gap: 0;
+        padding: 10px 0 16px;
+        background: var(--purple);
+        box-shadow: 0 8px 14px rgb(0 0 0 / 16%);
+        text-align: center;
+      }
+
+      .site-nav.is-open ul {
+        display: grid;
+      }
+
+      .site-nav li a {
+        display: block;
+        padding: 14px 20px;
+      }
+
+      .nav-toggle {
+        display: block;
+      }
+
+      .greeting {
+        font-size: 15px;
+        line-height: 1.78;
+      }
+
+      .signature-break {
+        display: block;
+      }
+
+      .works-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .map-placeholder {
+        width: 72vw;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .works-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-heading {
+        gap: 10px;
+      }
+
+      .map-placeholder {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <picture>
+      <source srcset="assets/images/TopImagePhone.jpg" media="(max-width: 760px)">
+      <img src="assets/images/TopImage.jpg" alt="RESPAWN 東京藝術大学大学院映像研究科ゲーム・インタラクティブアート専攻 一期生有志展">
+    </picture>
+  </header>
+
+  <nav class="site-nav" aria-label="サイト内ナビゲーション">
+    <button class="nav-toggle" type="button" aria-controls="site-menu" aria-expanded="false" aria-label="メニューを開く">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <ul id="site-menu">
+      <li><a href="#greeting">ご挨拶</a></li>
+      <li><a href="#works">展示作品</a></li>
+      <li><a href="#info">開催概要</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section class="section" id="greeting">
+      <h1 class="section-heading">ご挨拶</h1>
+      <p class="greeting">
+        第一期生有志展示「Respawn」を開催いたします。</br></br>本展は、東京藝術大学大学院映像研究科に新設された「ゲーム・インタラクティブアート専攻」の第一期生による、初めての展覧会です。作品の形態は、ビデオゲームからボードゲーム、インタラクティブアート、インスタレーションなど、多岐にわたります。</br>新設から最初の夏を迎える私たちは、本展のテーマに「Respawn」を掲げました。</br>
+「Respawn（リスポーン）」は、ビデオゲームにおいて、一度消失したキャラクターやオブジェクトなどが再びゲーム世界に現れることを意味します。しかし、プレイヤーは、単なるリセットではなくそれまでの記憶や経験を内包したまま、より強く新たな生を始めることができます。</br>私たちは、異なる国籍や文化圏、そして多様な世代やキャリアを経てこの場所に集まりました。バックグラウンドもまた、音楽やデザイン、テクノロジー、そしてアートの文脈など、それぞれが異なる専門性を携えています。</br>この「藝大」という新しいマップへリスポーンした私たちの作品をご覧ください。</br></br><span class="greeting-signature">ゲーム・インタラクティブアート専攻 <br class="signature-break">一期生一同</span>
+      </p>
+    </section>
+
+    <section class="section" id="works">
+      <h2 class="section-heading">展示作品</h2>
+      <!-- WORKS:START -->
+      <div class="works-grid">
+        <a class="work-card" href="works/work-01.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-01/main.jpg?v=18449cad0ff1" alt="セ・ボ〜ンズ" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">セ・ボ〜ンズ</h3>
+          <p class="work-author">福眞 奏太</p>
+        </a>
+        <a class="work-card" href="works/work-02.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-02/main.jpg?v=18449cad0ff1" alt="この形を作レ" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">この形を作レ</h3>
+          <p class="work-author">横山 立門</p>
+        </a>
+        <a class="work-card" href="works/work-03.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-03/main.jpg?v=18449cad0ff1" alt="Boundary" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">Boundary</h3>
+          <p class="work-author">天野 兼太</p>
+        </a>
+        <a class="work-card" href="works/work-04.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-04/main.jpg?v=18449cad0ff1" alt="Player" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">Player</h3>
+          <p class="work-author">中山 大成</p>
+        </a>
+        <a class="work-card" href="works/work-05.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-05/main.jpg?v=18449cad0ff1" alt="透き通る" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">透き通る</h3>
+          <p class="work-author">藤森 玲央</p>
+        </a>
+        <a class="work-card" href="works/work-06.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-06/main.jpg?v=23900c6342f0" alt="しふとべると！" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">しふとべると！</h3>
+          <p class="work-author">大塚 敏郎</p>
+        </a>
+        <a class="work-card" href="works/work-07.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-07/main.jpg?v=18449cad0ff1" alt="祭細壇断" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">祭細壇断</h3>
+          <p class="work-author">ニルギリ</p>
+        </a>
+        <a class="work-card" href="works/work-08.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-08/main.jpg?v=18449cad0ff1" alt="Tutti" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">Tutti</h3>
+          <p class="work-author">鈴木 ひなの</p>
+        </a>
+        <a class="work-card" href="works/work-09.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-09/thumbnail.jpg?v=e495ea9ef733" alt="灯台登り" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">灯台登り</h3>
+          <p class="work-author">陳禹霖（チンウリン）</p>
+        </a>
+        <a class="work-card" href="works/work-10.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-10/main.jpg?v=18449cad0ff1" alt="KISS・FIND" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">KISS・FIND</h3>
+          <p class="work-author">ダイ ミンミン</p>
+        </a>
+        <a class="work-card" href="works/work-11.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-11/main.jpg?v=973d70961140" alt="復元文庫" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">復元文庫</h3>
+          <p class="work-author">佐々木 隼</p>
+        </a>
+        <a class="work-card" href="works/work-12.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-12/main.jpg?v=ae7f1605798b" alt="Animemory -記憶の図書館-" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">Animemory -記憶の図書館-</h3>
+          <p class="work-author">大髙 那由子</p>
+        </a>
+        <a class="work-card" href="works/work-13.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-13/main.jpg?v=e03c02f1bed6" alt="Play Room" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">Play Room</h3>
+          <p class="work-author">鈴木 ひなの・中山 大成・松浦 恵夢・村山 海</p>
+        </a>
+        <a class="work-card" href="works/work-14.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-14/main.jpg?v=18449cad0ff1" alt="NewMe" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">NewMe</h3>
+          <p class="work-author">大久保 麻央</p>
+        </a>
+        <a class="work-card" href="works/work-15.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-15/main.jpg?v=18449cad0ff1" alt="くるくる、ぐるぐる" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">くるくる、ぐるぐる</h3>
+          <p class="work-author">平山 理貴</p>
+        </a>
+        <a class="work-card" href="works/work-16.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-16/main.jpg?v=18449cad0ff1" alt="別の世界" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">別の世界</h3>
+          <p class="work-author">平山 理貴</p>
+        </a>
+        <a class="work-card" href="works/work-17.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-17/main.png?v=cf99d49efc44" alt="声のゆくえ" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">声のゆくえ</h3>
+          <p class="work-author">藤井 嗣音</p>
+        </a>
+        <a class="work-card" href="works/work-18.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-18/main.jpg?v=1ce0e4705c3c" alt="Astrrow" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">Astrrow</h3>
+          <p class="work-author">横山 立門</p>
+        </a>
+        <a class="work-card" href="works/work-19.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-19/main.jpg?v=23da948009e2" alt="COLORS" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">COLORS</h3>
+          <p class="work-author">横山 立門</p>
+        </a>
+        <a class="work-card" href="works/work-20.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-20/main.png?v=275248de69c2" alt="アルカビット" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">アルカビット</h3>
+          <p class="work-author">嶋 晃平</p>
+        </a>
+        <a class="work-card" href="works/work-21.html">
+          <div class="work-thumb">
+            <img src="assets/images/works/work-21/main.jpg?v=08c72114b05e" alt="受験番号パチンコ" loading="lazy" data-optional-image>
+          </div>
+          <h3 class="work-title">受験番号パチンコ</h3>
+          <p class="work-author">大塚 敏郎</p>
+        </a>
+      </div>
+      <!-- WORKS:END -->
+    </section>
+
+    <section class="section" id="info">
+      <h2 class="section-heading">開催概要</h2>
+      <dl class="info-list">
+        <div>
+          <dt>会期：</dt>
+          <dd>2026 年 7 月 17 日（金）〜 7 月 20 日（月）</dd>
+        </div>
+        <div>
+          <dt>開催時間：</dt>
+          <dd>11:00-17:00（初日のみ 13:00-17:00）</dd>
+        </div>
+        <div>
+          <dt>会場：</dt>
+          <dd>東京都台東区上野公園 12-8 東京藝術大学 アーツ &amp; サイエンスラボ 1F4F</dd>
+        </div>
+      </dl>
+      <div class="map-placeholder" data-replace-image="map">
+        <img src="assets/images/GeidaiMap.jpg" alt="東京藝術大学 アーツ & サイエンスラボ周辺マップ">
+      </div>
+    </section>
+  </main>
+  <footer class="under-image" aria-label="下部画像">
+    <img src="assets/images/UnderImage.jpg" alt="">
+  </footer>
+  <script src="assets/js/site.js"></script>
+</body>
+</html>

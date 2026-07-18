@@ -16,8 +16,12 @@ from work_links import parse_links, youtube_embed_url
 
 
 ROOT = Path(__file__).resolve().parent.parent
+PUBLIC = ROOT / "public"
+SOURCE = ROOT / "source"
+WORK_IMAGES = PUBLIC / "assets" / "images" / "works"
+WORK_LINKS = SOURCE / "work-links"
 MAX_GALLERY_IMAGES = 10
-DEFAULT_CSV = ROOT / "docs" / "有志展キャプション情報 - シート1.csv"
+DEFAULT_CSV = SOURCE / "data" / "works.csv"
 WORKS_START = "      <!-- WORKS:START -->"
 WORKS_END = "      <!-- WORKS:END -->"
 PUBLIC_ORDER = [
@@ -69,7 +73,7 @@ def normalized(value: str | None) -> str:
 def find_csv() -> Path:
     if DEFAULT_CSV.exists():
         return DEFAULT_CSV
-    candidates = sorted((ROOT / "docs").glob("*.csv"))
+    candidates = sorted((SOURCE / "data").glob("*.csv"))
     if len(candidates) == 1:
         return candidates[0]
     raise SystemExit("CSVを特定できません。--csv でファイルを指定してください。")
@@ -141,17 +145,20 @@ def file_content_hash(path: Path) -> str:
 
 
 def existing_work_image_url(work_id: str, basename: str, relative_prefix: str) -> str | None:
-    directory = ROOT / "Image" / "works" / work_id
+    directory = WORK_IMAGES / work_id
     for extension in (".jpg", ".png"):
         path = directory / f"{basename}{extension}"
         if path.exists():
             version = file_content_hash(path)
-            return f"{relative_prefix}Image/works/{work_id}/{basename}{extension}?v={version}"
+            return (
+                f"{relative_prefix}assets/images/works/{work_id}/"
+                f"{basename}{extension}?v={version}"
+            )
     return None
 
 
 def media_links_html(work_id: str, title: str) -> tuple[str, str]:
-    links = parse_links(ROOT / "Image" / "works" / work_id / "links.txt")
+    links = parse_links(WORK_LINKS / work_id / "links.txt")
     youtube_url = links.get("youtube", "")
     if youtube_url:
         embed_url = html.escape(youtube_embed_url(youtube_url), quote=True)
@@ -193,7 +200,7 @@ def card_html(work: dict[str, str]) -> str:
     image_url = (
         existing_work_image_url(work_id, "thumbnail", "")
         or existing_work_image_url(work_id, "main", "")
-        or f"Image/works/{work_id}/main.jpg"
+        or f"assets/images/works/{work_id}/main.jpg"
     )
     return f'''        <a class="work-card" href="works/{work_id}.html">
           <div class="work-thumb">
@@ -215,7 +222,7 @@ def detail_html(work: dict[str, str]) -> str:
     work_id = work["id"]
     main_image_url = (
         existing_work_image_url(work_id, "main", "../")
-        or f"../Image/works/{work_id}/main.jpg"
+        or f"../assets/images/works/{work_id}/main.jpg"
     )
     video_markup, social_markup = media_links_html(work_id, title_ja)
     title_en_markup = (
@@ -265,9 +272,9 @@ def detail_html(work: dict[str, str]) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="{html.escape(description_raw[:120])}">
   <title>{title_ja} | RESPAWN</title>
-  <link rel="icon" href="../assets/favicon.png" type="image/png">
+  <link rel="icon" href="../assets/images/favicon.png" type="image/png">
   <link rel="stylesheet" href="https://use.typekit.net/qsa7gru.css">
-  <link rel="stylesheet" href="../assets/work-detail.css">
+  <link rel="stylesheet" href="../assets/css/work-detail.css">
 </head>
 <body>
   <nav class="site-nav" aria-label="サイト内ナビゲーション">
@@ -304,29 +311,16 @@ def detail_html(work: dict[str, str]) -> str:
     </div>
   </main>
   <footer class="under-image" aria-label="下部画像">
-    <img src="../Image/UnderImage.jpg" alt="">
+    <img src="../assets/images/UnderImage.jpg" alt="">
   </footer>
-  <script src="../assets/site.js"></script>
+  <script src="../assets/js/site.js"></script>
 </body>
 </html>
 '''
 
 
-def bootstrap_assets() -> None:
-    assets = ROOT / "assets"
-    assets.mkdir(exist_ok=True)
-    css_path = assets / "work-detail.css"
-    if not css_path.exists():
-        source = (ROOT / "work-detail.html").read_text(encoding="utf-8")
-        match = re.search(r"<style>\s*(.*?)\s*</style>", source, flags=re.DOTALL)
-        if not match:
-            raise SystemExit("work-detail.html からCSSを抽出できません。")
-        css = match.group(1).replace('url("Zen_Kaku_Gothic_New/', 'url("../Zen_Kaku_Gothic_New/')
-        css_path.write_text(css + "\n", encoding="utf-8")
-
-
 def update_index(works: list[dict[str, str]]) -> None:
-    index_path = ROOT / "index.html"
+    index_path = PUBLIC / "index.html"
     source = index_path.read_text(encoding="utf-8")
     cards = "\n".join(card_html(work) for work in works)
     block = f'''{WORKS_START}
@@ -351,10 +345,9 @@ def main() -> None:
     args = parser.parse_args()
     csv_path = (args.csv or find_csv()).resolve()
     works = load_works(csv_path)
-    bootstrap_assets()
     update_index(works)
 
-    works_dir = ROOT / "works"
+    works_dir = PUBLIC / "works"
     works_dir.mkdir(exist_ok=True)
     for work in works:
         (works_dir / f"{work['id']}.html").write_text(detail_html(work), encoding="utf-8")

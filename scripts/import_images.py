@@ -16,6 +16,8 @@ from work_links import LINK_KEYS, MAX_LINKS_BYTES, parse_links, parse_links_text
 
 
 ROOT = Path(__file__).resolve().parent.parent
+PUBLIC_WORK_IMAGES = ROOT / "public" / "assets" / "images" / "works"
+SOURCE_WORK_LINKS = ROOT / "source" / "work-links"
 WORK_FOLDER_NAMES = {
     "work-01": "work-01-cest-bones",
     "work-02": "work-02-make-this-shape",
@@ -216,33 +218,27 @@ def main() -> None:
         if args.check:
             print(f"OK {directory.name} -> {work_id}: {len(files)} files")
             continue
-        destination = ROOT / "Image" / "works" / work_id
-        destination.mkdir(parents=True, exist_ok=True)
-        for old_file in destination.iterdir():
+        image_destination = PUBLIC_WORK_IMAGES / work_id
+        links_destination = SOURCE_WORK_LINKS / work_id / LINKS_FILENAME
+        image_destination.mkdir(parents=True, exist_ok=True)
+        links_destination.parent.mkdir(parents=True, exist_ok=True)
+        for old_file in image_destination.iterdir():
             if (
                 old_file.is_file()
-                and (
-                    old_file.name.lower() in LINKS_FILENAMES
-                    or (
-                        old_file.stem.lower() in ALLOWED_BASENAMES
-                        and old_file.suffix.lower() in ALLOWED_EXTENSIONS
-                    )
-                )
+                and old_file.stem.lower() in ALLOWED_BASENAMES
+                and old_file.suffix.lower() in ALLOWED_EXTENSIONS
             ):
                 old_file.unlink()
+        links_destination.unlink(missing_ok=True)
         for source in files:
             if source.name.lower() in LINKS_DOCX_FILENAMES:
                 links = parse_links_docx(source)
-                (destination / LINKS_FILENAME).write_text(
-                    formatted_links(links), encoding="utf-8"
-                )
+                links_destination.write_text(formatted_links(links), encoding="utf-8")
             elif source.name.lower() == LINKS_FILENAME:
                 links = parse_submission_links(source)
-                (destination / LINKS_FILENAME).write_text(
-                    formatted_links(links), encoding="utf-8"
-                )
+                links_destination.write_text(formatted_links(links), encoding="utf-8")
             else:
-                shutil.copy2(source, destination / source.name.lower())
+                shutil.copy2(source, image_destination / source.name.lower())
         print(f"IMPORTED {directory.name} -> {work_id}: {len(files)} files")
 
     if args.check:
