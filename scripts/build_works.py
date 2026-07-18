@@ -47,11 +47,6 @@ PUBLIC_ORDER = [
     "アルカビット",
     "受験番号パチンコ",
 ]
-PUBLIC_AUTHOR_OVERRIDES = {
-    "Tutti": "鈴木 ひなの",
-    "灯台登り": "陳禹霖（チンウリン）",
-    "Play Room": "鈴木 ひなの・中山 大成・松浦 恵夢・村山 海",
-}
 SOCIAL_LINKS = (
     ("youtube_channel", "YouTube", "youtube"),
     ("x", "X", "x"),
@@ -120,19 +115,11 @@ def load_works(csv_path: Path) -> list[dict[str, str]]:
     works = [by_title[title] for title in PUBLIC_ORDER]
     for number, work in enumerate(works, start=1):
         work["id"] = f"work-{number:02d}"
-        title = work["作品タイトル（日本語）"]
-        if title in PUBLIC_AUTHOR_OVERRIDES:
-            work["名前（日本語表記）"] = PUBLIC_AUTHOR_OVERRIDES[title]
     return works
 
 
 def escape_lines(value: str) -> str:
     return html.escape(value).replace("\n", "<br>\n        ")
-
-
-def public_description(value: str) -> str:
-    """CSVに残った矢印付きの校正会話を公開本文から除外する。"""
-    return re.split(r"\s*[（(]?←", value, maxsplit=1)[0].rstrip()
 
 
 @lru_cache(maxsize=None)
@@ -217,7 +204,7 @@ def detail_html(work: dict[str, str]) -> str:
     title_en = html.escape(title_en_raw)
     author_ja = escape_lines(work["名前（日本語表記）"])
     author_en = html.escape(work["Name（英語表記）"])
-    description_raw = public_description(work["コンセプト・遊び方など"])
+    description_raw = work["コンセプト・遊び方など"]
     description = escape_lines(description_raw)
     work_id = work["id"]
     main_image_url = (
