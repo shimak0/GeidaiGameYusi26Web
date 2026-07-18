@@ -41,7 +41,10 @@ WORK_FOLDER_NAMES = {
 }
 FOLDER_TO_WORK_ID = {folder_name: work_id for work_id, folder_name in WORK_FOLDER_NAMES.items()}
 REQUIRED_BASENAMES = {"main"}
-OPTIONAL_BASENAMES = {"thumbnail"} | {f"gallery-{number:02d}" for number in range(1, 6)}
+MAX_GALLERY_IMAGES = 10
+OPTIONAL_BASENAMES = {"thumbnail"} | {
+    f"gallery-{number:02d}" for number in range(1, MAX_GALLERY_IMAGES + 1)
+}
 ALLOWED_BASENAMES = REQUIRED_BASENAMES | OPTIONAL_BASENAMES
 ALLOWED_EXTENSIONS = {".jpg", ".png"}
 LINKS_FILENAME = "links.txt"
@@ -230,6 +233,11 @@ def main() -> None:
         for source in files:
             if source.name.lower() in LINKS_DOCX_FILENAMES:
                 links = parse_links_docx(source)
+                (destination / LINKS_FILENAME).write_text(
+                    formatted_links(links), encoding="utf-8"
+                )
+            elif source.name.lower() == LINKS_FILENAME:
+                links = parse_submission_links(source)
                 (destination / LINKS_FILENAME).write_text(
                     formatted_links(links), encoding="utf-8"
                 )

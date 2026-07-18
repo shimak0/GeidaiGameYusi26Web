@@ -16,6 +16,7 @@ from work_links import parse_links, youtube_embed_url
 
 
 ROOT = Path(__file__).resolve().parent.parent
+MAX_GALLERY_IMAGES = 10
 DEFAULT_CSV = ROOT / "docs" / "有志展キャプション情報 - シート1.csv"
 WORKS_START = "      <!-- WORKS:START -->"
 WORKS_END = "      <!-- WORKS:END -->"
@@ -227,7 +228,7 @@ def detail_html(work: dict[str, str]) -> str:
     )
     gallery_urls = [
         (number, url)
-        for number in range(1, 6)
+        for number in range(1, MAX_GALLERY_IMAGES + 1)
         if (url := existing_work_image_url(work_id, f"gallery-{number:02d}", "../"))
     ]
     carousel_images = "\n".join(

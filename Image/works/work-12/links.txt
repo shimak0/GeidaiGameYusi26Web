@@ -1,8 +1,6 @@
-# 掲載を希望する項目だけ、コロンの右側に https:// から始まるURLを記入してください。
-# 空欄の項目は作品ページに表示されません。
-
 youtube:
-x:
-instagram:
+youtube_channel:
+x: https://x.com/nayukoromushi
+instagram: https://www.instagram.com/nayukoromushi/
 steam:
-website:
+website: https://nayuko.com/

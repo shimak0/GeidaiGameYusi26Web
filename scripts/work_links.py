@@ -18,6 +18,7 @@ SERVICE_HOSTS = {
     "steam": {"store.steampowered.com", "steamcommunity.com", "www.steamcommunity.com"},
 }
 YOUTUBE_CHANNEL_PATHS = {"channel", "c", "user"}
+IGNORABLE_FORMAT_CHARACTERS = str.maketrans("", "", "\u200b\u200c\u200d\u2060\ufeff")
 
 
 def youtube_video_id(url: str) -> str | None:
@@ -75,7 +76,8 @@ def parse_links_text(text: str) -> dict[str, str]:
         raise ValueError("links.txt の内容が16KBを超えています")
     links: dict[str, str] = {}
     for line_number, raw_line in enumerate(text.splitlines(), start=1):
-        line = raw_line.strip()
+        # Google Docsなどからのコピー時に混入するゼロ幅文字を除去する
+        line = raw_line.translate(IGNORABLE_FORMAT_CHARACTERS).strip()
         if not line or line.startswith("#"):
             continue
         if ":" not in line:

@@ -1,7 +1,5 @@
-# 掲載を希望する項目だけ、コロンの右側に https:// から始まるURLを記入してください。
-# 空欄の項目は作品ページに表示されません。
-
 youtube:
+youtube_channel:
 x:
 instagram:
 steam:

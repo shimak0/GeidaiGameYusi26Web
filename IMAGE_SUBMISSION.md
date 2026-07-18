@@ -13,6 +13,8 @@ work-01-cest-bones/
   thumbnail.jpg   任意：一覧用画像
   gallery-01.jpg  任意：作品ページの追加画像
   gallery-02.png  任意
+  ...
+  gallery-10.jpg  任意：追加画像は最大10枚
   links.txt       任意：YouTube・SNS・関連サイト
 ```
 
@@ -27,7 +29,7 @@ work-01-cest-bones/
   - `main`、`gallery-XX`：1920 × 1080 px
 - `thumbnail` がない場合は `main` が一覧画像として使用される
 - 上限：1ファイル10MB
-- 追加画像は `gallery-01` から番号を飛ばさずに命名
+- 追加画像は最大10枚。`gallery-01` から `gallery-10` まで番号を飛ばさずに命名
 - ZIP内にGoogle Driveが作る親フォルダが含まれていても取り込み可能
 
 ファイル名が異なる画像、JPEG・PNG以外の画像、`main` が不足した作品は取り込まれません。

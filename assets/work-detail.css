@@ -255,6 +255,7 @@
 
     .carousel-dots {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       gap: 28px;
       margin-top: 34px;
@@ -440,6 +441,15 @@
       .carousel-side::before {
         width: 28px;
         height: 28px;
+      }
+
+      .carousel-dots {
+        gap: 14px;
+        margin-top: 24px;
+      }
+
+      .carousel-dot {
+        width: 18px;
       }
 
       .back-button {
