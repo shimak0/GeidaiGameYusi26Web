@@ -1,6 +1,6 @@
 youtube:
 youtube_channel:
-x:
+x: https://x.com/rimondayon
 instagram:
 steam:
 website:
