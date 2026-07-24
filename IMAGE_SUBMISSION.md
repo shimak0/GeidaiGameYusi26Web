@@ -74,7 +74,7 @@ website: https://example.com/
 | work-02 | `work-02-make-this-shape` | この形を作レ | 横山 立門 |
 | work-03 | `work-03-boundary` | Boundary | 天野 兼太 |
 | work-04 | `work-04-player` | Player | 中山 大成 |
-| work-05 | `work-05-transparent` | 透き通る | 藤森 玲央 |
+| work-05 | `work-05-transparent` | ちびすけはやい | 藤森 玲央 |
 | work-06 | `work-06-shiftwelt` | しふとべると！ | 大塚 敏郎 |
 | work-07 | `work-07-shred-shrine` | 祭細壇断 | ニルギリ |
 | work-08 | `work-08-tutti` | Tutti | 鈴木 ひなの |
